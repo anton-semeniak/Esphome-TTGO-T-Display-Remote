@@ -1,0 +1,384 @@
+esphome:
+  name: esp_ttgo_t
+  platform: ESP32
+  board: nodemcu-32s
+  on_boot:
+    lambda: |-
+      id(main_light_command).publish_state("IDLE");
+
+wifi:
+  id: WiFi1
+  ssid: !secret WiFi_SSID
+  password: !secret WiFi_password
+  manual_ip:
+    static_ip: 172.16.0.84
+    gateway: 172.16.0.1
+    subnet: 255.255.255.0
+
+# Enable logging
+logger:
+
+# Enable OTA updates
+ota:
+  password: !secret OTA_Password
+
+# Enable Home Assistant API
+api:
+  id: api1
+  password: !secret API_Password
+
+remote_receiver:
+  pin: 
+    number: GPIO27
+    inverted: True
+  dump: nec
+
+globals:
+  - id: last_remote
+    restore_value: no
+    type: int
+    initial_value: "0"
+  - id: menu_pos
+    restore_value: no
+    type: int
+    initial_value: "0"
+
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO19
+  
+#fonts (folder 'fonts')
+font:
+  - file: fonts/slkscr.ttf
+    id: font1
+    size: 24
+
+#Icons (folder 'images')
+image:
+  - file: "images/LAMP_ON.png"
+    id: lamp_on
+    type: RGB565
+  - file: "images/LAMP_OFF.png"
+    id: lamp_off
+    type: RGB565
+  - file: "images/wifi_24x24.png"
+    id: wifi_img
+    type: RGB565
+  - file: "images/ha_24x24.png"
+    id: ha_img
+    type: RGB565
+
+  
+display:
+  #based on https://github.com/musk95/esphome
+  - platform: st7789v
+    id: st7789vdisplay
+    reset_pin: GPIO23
+    dc_pin: GPIO16
+    cs_pin: GPIO5
+    bl_pin: GPIO4
+    brightness: 25%
+    update_interval: 5s
+    lambda: |-
+      it.set_rotation(DISPLAY_ROTATION_0_DEGREES);
+      //------------------------------ Menu
+      if (id(menu_pos)==0){
+        it.print (35, 2, id(font1), 0xFE60, "MAIN");
+      }
+      else {
+        it.print (35, 2, id(font1), 0xFF75, "MAIN");
+      }
+      if (id(menu_pos)==1){
+        it.print (35, 35, id(font1), 0xFE60, "CLOSET");
+      }
+      else {
+        it.print (35, 35, id(font1), 0xFF75, "CLOSET");
+      }
+      if (id(menu_pos)==2){
+        it.print (35, 68, id(font1), 0xFE60, "DESK");
+      }
+      else {
+        it.print (35, 68, id(font1), 0xFF75, "DESK");
+      }
+      if (id(menu_pos)==3){
+        it.print (35, 101, id(font1), 0xFE60, "ANTON");
+      }
+      else {
+        it.print (35, 101, id(font1), 0xFF75, "ANTON");
+      }
+      if (id(menu_pos)==4){
+        it.print (35, 134, id(font1), 0xFE60, "OKSANA");
+      }
+      else {
+        it.print (35, 134, id(font1), 0xFF75, "OKSANA");
+      }
+      if (id(menu_pos)==5){
+        it.print (35, 167, id(font1), 0xFE60, "OFF ALL");
+      }
+      else {
+        it.print (35, 167, id(font1), 0xFF75, "OFF ALL");
+      }
+      
+      // ----------------------------- States
+      if (id(bedroom_lights).state){
+        it.image(0, 0, id(lamp_on));
+      }
+      else {
+        it.image(0, 0, id(lamp_off));
+      }
+      if (id(closed_lights).state){
+        it.image(0, 33, id(lamp_on));
+      }
+      else {
+        it.image(0, 33, id(lamp_off));
+      }
+      if (id(desk_lamp_3).state){
+        it.image(0, 67, id(lamp_on));
+      }
+      else {
+        it.image(0, 67, id(lamp_off));
+      }
+      if (id(philips_anton_bed).state){
+        it.image(0, 99, id(lamp_on));
+      }
+      else {
+        it.image(0, 99, id(lamp_off));
+      }
+      if (id(philips_oksana_bed).state){
+        it.image(0, 132, id(lamp_on));
+      }
+      else {
+        it.image(0, 132, id(lamp_off));
+      }
+      it.image(0, 165, id(lamp_off));
+      //Selected Item
+      it.rectangle(33, 33*id(menu_pos)+1, 102, 26, 0xFE60);
+      //Spacer
+      it.filled_rectangle (5,205,125,3,0xFFFF);
+      //Time
+      it.strftime(3, 235, id(font1), 0xFFFF, TextAlign::BASELINE_LEFT, "%H:%M", id(esptime).now());
+      //it.printf (120, 215, id(font1), 0xFE60,"%i",id(last_remote));
+      //Status Icons
+      if (id(WiFi1).is_connected ()) {
+        it.image(80, 216, id(wifi_img));
+      }
+      if (id(api1).is_connected ()) {
+        it.image(110, 216, id(ha_img));
+      }
+      
+text_sensor:
+  - platform: template
+    id: main_light_command
+    name: "Badrom Main Light Commands"
+
+# HOME ASSISTANT LIGHTS/SWITHES
+binary_sensor:
+  - platform: homeassistant
+    id: bedroom_lights
+    entity_id: light.bedroom_lights
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: closed_lights
+    entity_id: switch.closet_light
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: desk_lamp_3
+    entity_id: light.desk_lamp_3
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: philips_anton_bed
+    entity_id: light.philips_anton_bed
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: philips_oksana_bed
+    entity_id: light.philips_oksana_bed
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: bed_light
+    entity_id: light.bed_light
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+  - platform: homeassistant
+    id: all_lights
+    entity_id: group.bedroom_light
+    internal: true
+    on_state:
+      then:
+        - component.update: st7789vdisplay
+
+# REMOTE BUTTONS:
+# UP - 8
+# DOWN - 2
+# LEFT - 4
+# RIGHT - 6
+# OK - 5
+# MENU - 1
+# PLAY/PAUSE - 3 
+
+  - platform: remote_receiver
+    name: "Apple Remote UP"
+    id: apple_up
+    nec:
+      address: 0x77E1
+      command: 0xD04E
+    internal: true
+    on_press:
+      then:
+        - lambda: |-
+            id(last_remote) = 8;
+            if (id(menu_pos) > 0) {
+                id(menu_pos) -=1;
+            }
+        - component.update: st7789vdisplay
+  - platform: remote_receiver
+    name: "Apple Remote DOWN"
+    id: apple_down
+    nec:
+      address: 0x77E1
+      command: 0xB04E
+    internal: true
+    on_press:
+      then:
+        - lambda: |-
+            id(last_remote) = 2;
+            if (id(menu_pos) < 5) {
+                id(menu_pos) +=1;
+            }
+        - component.update: st7789vdisplay
+  - platform: remote_receiver
+    name: "Apple Remote LEFT"
+    id: apple_left
+    nec:
+      address: 0x77E1
+      command: 0x104E
+    internal: true
+    on_state:
+      then:
+        - globals.set:
+            id: last_remote 
+            value: "4"
+        - component.update: st7789vdisplay
+
+  - platform: remote_receiver
+    name: "Apple Remote RIGHT"
+    id: apple_right
+    nec:
+      address: 0x77E1
+      command: 0xE04E
+    internal: true
+    on_state:
+      then:
+        - globals.set:
+            id: last_remote 
+            value: "6"
+        - component.update: st7789vdisplay
+
+  - platform: remote_receiver
+    name: "Apple Remote OK"
+    id: apple_ok
+    nec:
+      address: 0x77E1
+      command: 0xBA4E
+    internal: true
+    on_press:
+      then:
+        - globals.set:
+            id: last_remote 
+            value: "5"
+        - component.update: st7789vdisplay
+        - lambda: |-
+            id(main_light_command).publish_state(to_string(id(menu_pos))+"_TOGLE");
+        - delay: 0.1s
+        - lambda: |-
+            id(main_light_command).publish_state("IDLE");
+
+  - platform: remote_receiver
+    name: "Apple Remote PLAY"
+    id: apple_play
+    nec:
+      address: 0x77E1
+      command: 0x7A4E
+    internal: true
+    on_state:
+      then:
+        - globals.set:
+            id: last_remote 
+            value: "3"
+        - component.update: st7789vdisplay
+
+  - platform: remote_receiver
+    name: "Apple Remote MENU"
+    id: apple_menu
+    nec:
+      address: 0x77E1
+      command: 0x404E
+    internal: true
+    on_state:
+      then:
+        - globals.set:
+            id: last_remote 
+            value: "1"
+        - component.update: st7789vdisplay
+
+# LOCAL BUTTONS
+# backlight off
+  - platform: gpio
+    pin: 
+      number: 0
+      inverted: True
+      mode: INPUT_PULLUP
+    name: left_button
+    on_click:
+      then: 
+        lambda: |-
+          id(st7789vdisplay).backlight (false);
+
+# backlight on
+  - platform: gpio
+    pin: 
+      number: 35
+      inverted: True
+      mode: INPUT_PULLUP
+    name: right_button
+    on_click:
+      then: 
+        lambda: |-
+          id(st7789vdisplay).backlight (true);
+
+switch:
+  - platform: template
+    id: sw_backlight
+    name: "Screen Backlight"
+    lambda: |-
+      if (id(st7789vdisplay).get_backlight()) {
+        return true;
+      } else {
+        return false;
+      }
+    turn_on_action:
+        lambda: |-
+          id(st7789vdisplay).backlight (true);
+    turn_off_action:
+        lambda: |-
+          id(st7789vdisplay).backlight (false);
+
+time:
+  - platform: homeassistant
+    id: esptime

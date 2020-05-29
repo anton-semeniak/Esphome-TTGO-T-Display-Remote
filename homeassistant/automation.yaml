@@ -1,0 +1,80 @@
+- id: 'ttgo_main_light'
+  alias: TTGO Main Light Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 0_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: light.bedroom_lights
+    service: light.toggle
+
+- id: 'ttgo_closet_light'
+  alias: TTGO Closet Light Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 1_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: switch.closet_light
+    service: switch.toggle
+
+- id: 'ttgo_desk_light'
+  alias: TTGO Desk Light Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 2_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: light.desk_lamp_3
+    service: light.toggle
+    
+- id: 'ttgo_bed_l_light'
+  alias: TTGO2 Bed Left Light Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 3_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: light.philips_bed_l
+    service: light.toggle
+    
+- id: 'ttgo2_bed_r_light'
+  alias: TTGO2 Right Light Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 4_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: light.philips_bed_r
+    service: light.toggle
+    
+- id: 'ttgo2_all_lights'
+  alias: TTGO2 All Lights Togle
+  description: ''
+  trigger:
+  - entity_id: sensor.badrom_main_light_commands
+    platform: state
+    to: 5_TOGLE
+  condition: []
+  action:
+  - data: {}
+    entity_id: group.bedroom_light
+    service: homeassistant.turn_off
+    
+    
+    
