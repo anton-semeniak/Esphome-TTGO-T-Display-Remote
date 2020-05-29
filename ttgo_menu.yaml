@@ -169,7 +169,7 @@ display:
 text_sensor:
   - platform: template
     id: main_light_command
-    name: "Badrom Main Light Commands"
+    name: "Bedrom Main Light Commands"
 
 # HOME ASSISTANT LIGHTS/SWITHES
 binary_sensor:
