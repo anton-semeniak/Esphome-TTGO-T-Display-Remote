@@ -1,4 +1,5 @@
-# Exampe of ESPHome configuration how to use TTGO T-Display with IR Remote Control to control lights in Home Assistant.
+# TTGO T-Display ESPhome IR 
+ESPHome configuration to use TTGO T-Display with IR Remote Control to control lights in Home Assistant.
 
 ## Components: 
 * [TTGO T-Display](https://github.com/Xinyuan-LilyGO/TTGO-T-Display)
