@@ -2,7 +2,7 @@
   alias: TTGO Main Light Togle
   description: ''
   trigger:
-  - entity_id: sensor.badrom_main_light_commands
+  - entity_id: sensor.bedroom_main_light_commands
     platform: state
     to: 0_TOGLE
   condition: []
