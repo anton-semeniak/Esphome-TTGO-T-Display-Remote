@@ -23,7 +23,7 @@ This configuration for Apple Remote (aluminum), but it can be replaces by any ot
 ![Image of schematic](https://github.com/anton-semeniak/Esphome-TTGO-T-Display-Remote/blob/master/documents/images/IR_schematic.PNG)
 
 # Home Assistant entities:
-* Badrom Main Light Commands - sensor for commands from ESPHome
+* Bedrom Main Light Commands - sensor for commands from ESPHome
 * Screen Backlight - switch for backlight 
 * left_button - left onboard button on TTGO T-Display, turn off screen 
 * right_button - right onboard button on TTGO T-Display, turn on screen
